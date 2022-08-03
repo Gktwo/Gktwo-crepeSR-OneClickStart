@@ -1,0 +1,16 @@
+进阶教程：
+
+游戏数据存放目录：星穹铁道单机版\StarRailps\environmentvariables\db
+
+如存档损坏可删除db下文件重新创建角色
+
+1.使用控制台命令：查看命令.txt
+
+2.数据库修改
+使用navicat修改存档数据
+
+
+
+
+
+

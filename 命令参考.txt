@@ -1,0 +1,22 @@
+命令参考
+
+account create/delete 账户名  uid
+例如 account create tester 10001
+
+target <UID>
+添加角色前的执行步骤
+例如 target 10001
+
+avatar add/remove 角色id
+例如
+avatar add 10001
+
+一键获得全角色
+target giveall
+avatar giveall
+
+exit
+关闭服务器
+
+help
+查看命令帮助
