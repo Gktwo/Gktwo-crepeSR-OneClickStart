@@ -16,7 +16,7 @@ export default async function handle(command: Command) {
     SRServer.getInstance().sessions.forEach(client => {
         possibleTargets.push({
             id: `${client.ctx.address}:${client.ctx.port}`,
-            uid: Number(client.player.db._id),
+            uid: client.player.uid,
             session: client
         });
     });

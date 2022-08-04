@@ -1,10 +1,11 @@
 import Session from "../server/kcp/Session";
-import { AvatarType, ExtraLineupType, HeroBasicType, LineupInfo, Vector } from "../data/proto/StarRail";
+import { AvatarType, ExtraLineupType, HeroBasicType, LineupAvatar, LineupInfo, Vector } from "../data/proto/StarRail";
 import Logger from "../util/Logger";
 import Account from "./Account";
 import Avatar from "./Avatar";
 import Database from "./Database";
 import { Scene } from "../game/Scene";
+import Inventory from "./Inventory";
 const c = new Logger("Player");
 
 export interface LineupI {
@@ -49,6 +50,7 @@ interface PlayerI {
 export default class Player {
     public readonly uid: number
     public readonly scene: Scene;
+    private inventory!: Inventory;
 
     private constructor(readonly session: Session, public db: PlayerI) {
         this.uid = db._id;
@@ -65,34 +67,35 @@ export default class Player {
 
     public static async fromToken(session: Session, token: string): Promise<Player | undefined> {
         const db = Database.getInstance();
-        const plr = await db.get("players", { token }) as unknown as PlayerI;
-        if (!plr) return Player.fromUID(session, (await Account.fromToken(token))?.uid || Math.round(Math.random() * 50000));
+        const plr = await db.get("players", { token: token }) as unknown as PlayerI;
+        if (!plr) return await Player.fromUID(session, (await Account.fromToken(token))?.uid || Math.round(Math.random() * 50000));
 
         return new Player(session, plr);
     }
 
     public async getLineup(lineupIndex?: number): Promise<LineupInfo> {
-        const curIndex = this.db.lineup.curIndex;
-        const lineup = this.db.lineup.lineups[lineupIndex || curIndex];
-        const avatars = await Avatar.fromLineup(this.uid, lineup);
-        let slot = 0;
-        avatars.forEach(avatar => {
-            // Fallback lineup
-            if (!avatar) return; // Matsuko.
-            if (!avatar.lineup) avatar.lineup = {
-                avatarType: AvatarType.AVATAR_FORMAL_TYPE,
-                hp: 10000,
-                id: 1001,
-                satiety: 100,
+        // Get avatar data.
+        const index = lineupIndex ?? this.db.lineup.curIndex;
+        const lineup = this.db.lineup.lineups[index];
+        const avatars = await Avatar.getAvatarsForLineup(this, lineup);
+
+        // Construct LineupInfo.
+        const lineupAvatars : LineupAvatar[] = [];
+        for (let slot = 0; slot < avatars.length; slot++) {
+            lineupAvatars.push({
                 slot: slot,
-                sp: 10000
-            }
-            avatar.lineup.slot = slot++;
-        });
+                avatarType: avatars[slot].db.avatarType,
+                id: avatars[slot].db.baseAvatarId,
+                hp: avatars[slot].db.fightProps.hp,
+                sp: avatars[slot].db.fightProps.sp,
+                satiety: avatars[slot].db.fightProps.satiety
+            });
+        }
+
         return {
             ...lineup,
-            index: 0,
-            avatarList: avatars.map(x => x.lineup)
+            index: index,
+            avatarList: lineupAvatars
         }
     }
 
@@ -103,6 +106,15 @@ export default class Player {
         };
 
         this.db.lineup.curIndex = curIndex;
+    }
+
+    public async getInventory() : Promise<Inventory> {
+        // If this players inventory has not been loaded yet, do so now.
+        if (!this.inventory) {
+            this.inventory = await Inventory.loadOrCreate(this);
+        }
+
+        return this.inventory;
     }
 
     public static async create(session: Session, uid: number | string): Promise<Player | undefined> {
@@ -155,23 +167,26 @@ export default class Player {
             name: "",
             planeId: 10001
         }
+
         const LINEUPS = 6;
-        dataObj.lineup = {
-            curIndex: 0,
-            lineups: {}
-        }
-        for (let i = 0; i <= LINEUPS; i++) {
-            const copy = baseLineup;
-            copy.index = 0;
-            copy.name = `Team ${i}`;
+        for (let i = 0; i < LINEUPS; i++) {
+            const copy = {
+                ...baseLineup,
+                index: i,
+                name: `Team ${i}`
+            };
             dataObj.lineup.lineups[i] = copy;
         }
 
-        await Avatar.create(uid, 1001, 0);
+        const player = new Player(session, dataObj);
+
+        await Avatar.addAvatarToPlayer(player, 1001);
+        // await Avatar.create(uid, 1001, 0);
         
 
+        // Save to database and return.
         await db.set("players", dataObj);
-        return new Player(session, dataObj);
+        return player;
     }
 
     public async save() {

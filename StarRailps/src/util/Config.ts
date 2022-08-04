@@ -27,7 +27,8 @@ const DEFAULT_CONFIG = {
         SERVER_PORT: 22102,
         MAINTENANCE: false,
         MAINTENANCE_MSG: "Server is in maintenance mode."
-    }
+    },
+    AUTO_ACCOUNT: false
 }
 type DefaultConfig = typeof DEFAULT_CONFIG;
 
@@ -80,6 +81,7 @@ export default class Config {
         MAINTENANCE: boolean;
         MAINTENANCE_MSG: string;
     } = Config.config.GAMESERVER;
+    public static AUTO_ACCOUNT: boolean = Config.config.AUTO_ACCOUNT;
 
     private constructor() { }
 }

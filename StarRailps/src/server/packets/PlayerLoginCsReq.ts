@@ -45,7 +45,8 @@ export default async function handle(session: Session, packet: Packet) {
     }
 
     if (!plr.db.lineup) {
-        await Avatar.create(plr.db._id, 1001, 0);
+        await Avatar.addAvatarToPlayer(plr, 1001);
+        //await Avatar.create(plr.db._id, 1001, 0);
         const baseLineup = {
             avatarList: [1001],
             extraLineupType: ExtraLineupType.LINEUP_NONE,

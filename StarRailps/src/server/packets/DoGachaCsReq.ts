@@ -1,4 +1,5 @@
 import { DoGachaCsReq, DoGachaScRsp, GachaItem, Item, ItemList } from "../../data/proto/StarRail";
+import { PayItemData } from "../../db/Inventory";
 import Banners from "../../util/Banner";
 import Packet from "../kcp/Packet";
 import Session from "../kcp/Session";
@@ -8,6 +9,17 @@ export default async function handle(session: Session, packet: Packet) {
     const body = packet.body as DoGachaCsReq;
     const banner = Banners.config.find(banner => banner.gachaId === body.gachaId)!;
     const combined = banner.rateUpItems4.concat(banner.rateUpItems5)
+
+    // Pay currency.
+    const inventory = await session.player.getInventory();
+    const success = await inventory.payItems([{ id: banner.costItemId, count: body.gachaNum } as PayItemData]);
+
+    if (!success) {
+        session.send(DoGachaScRsp, {
+            retcode: 1
+        } as DoGachaScRsp);
+    }
+
     //bad gachaing but whatever....
     //TODO: pity system, proper logic
     for(let i = 0; i < body.gachaNum; i++){

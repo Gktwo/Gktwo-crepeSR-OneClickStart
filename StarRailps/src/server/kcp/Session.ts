@@ -55,7 +55,7 @@ export default class Session {
             if (!recv) break;
 
             if (Packet.isValid(recv)) {
-                this.handlePacket(new Packet(recv));
+                await this.handlePacket(new Packet(recv));
             }
 
         } while (recv)
@@ -68,8 +68,8 @@ export default class Session {
         this.c.verbL(packet.body);
         this.c.verbH(packet.rawData);
 
-        import(`../packets/${packet.protoName}`).then(mod => {
-            mod.default(this, packet);
+        await import(`../packets/${packet.protoName}`).then(async mod => {
+            await mod.default(this, packet);
         }).catch(e => {
             if (e.code === 'MODULE_NOT_FOUND') this.c.warn(`Unhandled packet: ${packet.protoName}`);
             else this.c.error(e);
@@ -79,11 +79,17 @@ export default class Session {
     }
 
     public async sync() {
-        const avatars = await Avatar.fromUID(this.player.db._id);
+        const avatars = await Avatar.loadAvatarsForPlayer(this.player);
+        //const avatars = await Avatar.fromUID(this.player.db._id);
+        const inventory = await this.player.getInventory();
+
         this.send(PlayerSyncScNotify, PlayerSyncScNotify.fromPartial({
             avatarSync: {
-                avatarList: avatars.map(x => x.data),
+                avatarList: avatars.map(x => x.asAvatarProto())
             },
+            materialList: inventory.getMaterialList(),
+            equipmentList: inventory.getEquipmentList(),
+            relicList: inventory.getRelicsList(),
             basicInfo: this.player.db.basicInfo
         }));
 
