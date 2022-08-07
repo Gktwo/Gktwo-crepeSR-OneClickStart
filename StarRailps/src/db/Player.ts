@@ -43,7 +43,11 @@ interface PlayerI {
     posData: {
         floorID: number;
         planeID: number;
-        pos: Vector;
+        pos: {
+            x: number,
+            y: number,
+            z: number
+        };
     }
 }
 
@@ -52,7 +56,7 @@ export default class Player {
     public readonly scene: Scene;
     private inventory!: Inventory;
 
-    private constructor(readonly session: Session, public db: PlayerI) {
+    private constructor(readonly session: Session, public readonly db: PlayerI) {
         this.uid = db._id;
         this.scene = new Scene(this);
     }
@@ -133,13 +137,13 @@ export default class Player {
             heroBasicType: HeroBasicType.BoyWarrior,
             basicInfo: {
                 exp: 0,
-                level: 1,
+                level: 70,
                 hcoin: 0,
                 mcoin: 0,
                 nickname: acc.name,
                 scoin: 0,
-                stamina: 100,
-                worldLevel: 1,
+                stamina: 180,
+                worldLevel: 6,
             },
             lineup: {
                 curIndex: 0,
@@ -155,34 +159,25 @@ export default class Player {
                 }
             },
             banned: false
-        } as PlayerI
-
-        const baseLineup = {
-            avatarList: [1001],
-            extraLineupType: ExtraLineupType.LINEUP_NONE,
-            index: 0,
-            isVirtual: false,
-            leaderSlot: 0,
-            mp: 100, // ?? Not sure what this is
-            name: "",
-            planeId: 10001
-        }
+        } as PlayerI;
 
         const LINEUPS = 6;
         for (let i = 0; i < LINEUPS; i++) {
-            const copy = {
-                ...baseLineup,
+            const l : LineupI = {
+                avatarList: [1001],
+                extraLineupType: ExtraLineupType.LINEUP_NONE,
                 index: i,
-                name: `Team ${i}`
+                isVirtual: false,
+                leaderSlot: 0,
+                mp: 100,
+                name: `Team ${i}`,
+                planeId: 10001
             };
-            dataObj.lineup.lineups[i] = copy;
+            dataObj.lineup.lineups[i] = l;
         }
 
         const player = new Player(session, dataObj);
-
         await Avatar.addAvatarToPlayer(player, 1001);
-        // await Avatar.create(uid, 1001, 0);
-        
 
         // Save to database and return.
         await db.set("players", dataObj);

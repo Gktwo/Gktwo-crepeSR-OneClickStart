@@ -101,11 +101,31 @@ export default class Inventory {
         }
 
         switch (itemData.ItemType) {
-            case "Virtual": return 0; // ToDo: Handle virtual items.
+            case "Virtual": return this.getVirtualItemCount(id);
             case "Material": return this.db.materials[id] ?? 0;
         }
 
         return 0;
+    }
+
+    private getVirtualItemCount(id: number) : number {
+        // ToDo: Figure out which virtual item ID is what.
+        switch (id) {
+            case 2:
+                return this.player.db.basicInfo.scoin;
+                break;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Fetch the equipment with the given unique ID from the player's inventory.
+     * @param uniqueId The unique ID of the equipment to fetch.
+     * @returns The `Equipment` with the given unique ID, or `undefined` if the player does not have that equipment.
+     */
+    public getEquipmentByUid(uniqueId: number) {
+        return this.db.equipments.filter(e => e.uniqueId == uniqueId)?.[0];
     }
 
     /********************************************************************************
@@ -151,6 +171,14 @@ export default class Inventory {
      */
     public async addVirtualItem(id: number, count: number) {
         // ToDo: Figure out which virtual item ID is what.
+        switch (id) {
+            case 2:
+                this.player.db.basicInfo.scoin += count;
+                break;
+        }
+
+        // Save.
+        this.player.save();
     }
 
     /**
@@ -357,17 +385,28 @@ export default class Inventory {
     /********************************************************************************
         Player updating.
     ********************************************************************************/
-    private sendMaterialUpdate() {
+   /**
+    * Send `PlayerSyncScNotify` for materials.
+    */
+    public sendMaterialUpdate() {
         this.player.session.send(PlayerSyncScNotify, PlayerSyncScNotify.fromPartial({
             materialList: this.getMaterialList()
         }));
     }
-    private sendEquipmentUpdate() {
+
+    /**
+    * Send `PlayerSyncScNotify` for equipments.
+    */
+    public sendEquipmentUpdate() {
         this.player.session.send(PlayerSyncScNotify, PlayerSyncScNotify.fromPartial({
             equipmentList: this.getEquipmentList()
         }));
     }
-    private sendRelicUpdate() {
+
+    /**
+    * Send `PlayerSyncScNotify` for relics.
+    */
+    public sendRelicUpdate() {
         this.player.session.send(PlayerSyncScNotify, PlayerSyncScNotify.fromPartial({
             relicList: this.getRelicsList()
         }));

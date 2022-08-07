@@ -8,7 +8,7 @@ const c = new Logger("ProtoFactory");
 export class MessageType<T> {
     "encode": (arg0: T) => protobufjs.Writer;
     "fromPartial": (arg0: object) => T;
-    // "decode": (input: protobufjs.Reader | Uint8Array, length?: number)=> T;
+    "decode": (input: protobufjs.Reader | Uint8Array, length?: number)=> T;
     // "fromJSON": (object: any)=>T;
     // "toJSON": (message: T)=> unknown
     //you can add more fields here from the generated types

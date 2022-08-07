@@ -17,8 +17,8 @@ export default async function handle(command: Command) {
 
     let count: number = 1;
     let level: number = 1;
-    let rank: number = 1;
-    let promotion: number = 1;
+    let rank: number = 0;
+    let promotion: number = 0;
 
     for (let i = 2; i < command.args.length; i++) {
         const arg = command.args[i];
@@ -52,6 +52,9 @@ export default async function handle(command: Command) {
             break;
         }
     }
+
+    // Sync session.
+    await player.session.sync();
 }
 
 async function handleGive(player: Player, itemId: number, count:number, level: number, rank: number, promotion: number) {
@@ -96,9 +99,12 @@ async function handleGiveAll(player: Player) {
     const inventory = await player.getInventory();
 
     for (const entry of ItemExcel.all()) {
-        const count = entry.ItemType == "Material" ? 100 : 1;
+        const count = 
+            (entry.ItemType == "Material") ? 1000 : 
+            (entry.ItemType == "Virtual") ? 10_000_000 : 
+            1;
         await inventory.addItem(entry.ID, count);
     }
-
+    
     c.log(`All materials added to ${player.uid}`);
 }

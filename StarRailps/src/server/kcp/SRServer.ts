@@ -81,6 +81,6 @@ export default class SRServer {
     }
 
     private async onListening() {
-        c.log(`Listening on 0.0.0.0:${Config.GAMESERVER.SERVER_PORT}`);
+        c.log(`正在监听 0.0.0.0:${Config.GAMESERVER.SERVER_PORT}`);
     }
 }

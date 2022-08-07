@@ -16,7 +16,7 @@ export default async function handle(session: Session, packet: Packet) {
 
     if (!success) {
         session.send(DoGachaScRsp, {
-            retcode: 1
+            retcode: 1301
         } as DoGachaScRsp);
     }
 

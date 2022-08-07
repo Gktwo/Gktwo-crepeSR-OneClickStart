@@ -49,9 +49,9 @@ export default class Avatar {
                 baseAvatarId: 1001,
                 avatarType: AvatarType.AVATAR_FORMAL_TYPE,
                 level: 1,
-                exp: 1,
-                promotion: 1,
-                rank: 1,
+                exp: 0,
+                promotion: 0,
+                rank: 0,
                 equipmentUniqueId: 20003,
                 equipRelicList: [],
                 skilltreeList: [],
@@ -111,9 +111,9 @@ export default class Avatar {
             baseAvatarId: baseAvatarId,
             avatarType: AvatarType.AVATAR_FORMAL_TYPE,
             level: 1,
-            exp: 1,
-            promotion: 1,
-            rank: 1,
+            exp: 0,
+            promotion: 0,
+            rank: 0,
             equipmentUniqueId: 20003,
             equipRelicList: [],
             skilltreeList: [],
@@ -142,6 +142,11 @@ export default class Avatar {
 
         // Done.
         return res;
+    }
+
+    public async save() {
+        const db = Database.getInstance();
+        await db.update("avatars", { ownerUid: this.player.uid, baseAvatarId: this.db.baseAvatarId }, this.db);
     }
 
     /********************************************************************************

@@ -23,7 +23,11 @@ export default async function handle(session: Session, packet: Packet) {
             entity.pos = motion.pos;
             if (entity instanceof ActorEntity) {
                 entity.mapLayer = entityMotion.mapLayer;
-                session.player.db.posData.pos = motion.pos!;
+                session.player.db.posData.pos = {
+                    x: motion.pos.x,
+                    y: motion.pos.y,
+                    z: motion.pos.z
+                };
             }
         }
 

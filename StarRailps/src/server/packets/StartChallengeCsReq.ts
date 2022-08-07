@@ -17,14 +17,14 @@ export default async function handle(session: Session, packet: Packet) {
             rounds: 1,
             status: ChallengeStatus.CHALLENGE_DOING,
             killMonsterList: [{
-                monsterId: 1001010,
+                monsterId: 8013010,
                 killNum: 1,
             }]
         },
         maze: {
             // ? Data from MappingInfoExcelTable
             id: 30101,
-            mapEntryId: 1000,
+            mapEntryId: 10001,
             floor: {
                 floorId: 20121001,
                 scene: {
